@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ricky✳️ | Earn Online</title>
+
+<style>
+body{
+  font-family:Arial, sans-serif;
+  background:#f2f2f2;
+  margin:0;
+}
+
+header{
+  background:#0a7cff;
+  color:white;
+  padding:15px;
+  text-align:center;
+}
+
+.container{
+  max-width:420px;
+  margin:20px auto;
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+input,button{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+
+button{
+  background:#0a7cff;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#0559b3;
+}
+
+.link{
+  color:#0a7cff;
+  cursor:pointer;
+  text-align:center;
+}
+
+.hidden{
+  display:none;
+}
+
+.box{
+  background:#fafafa;
+  padding:10px;
+  border-radius:6px;
+  margin:10px 0;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Ricky✳️ Online Jobs</h2>
+<p>Support: 0792172378</p>
+</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginBox">
+<h3>Login</h3>
+<input id="loginEmail" placeholder="Email">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<p class="link" onclick="show('registerBox')">Create Account</p>
+</div>
+
+<!-- REGISTER -->
+<div id="registerBox" class="hidden">
+<h3>Register</h3>
+<input id="regEmail" placeholder="Email">
+<input id="regPass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+
+<p class="link" onclick="show('loginBox')">Back to Login</p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+
+<h3>Dashboard</h3>
+
+<div class="box">
+User: <b id="userEmail"></b><br>
+Tier: <b id="userTier"></b><br>
+Balance: Ksh <b id="userBalance">0</b>
+</div>
+
+<button onclick="activate()">Activate Account (Ksh 100)</button>
+<button onclick="show('tasksBox')">Do Tasks</button>
+<button onclick="show('vipBox')">Upgrade VIP</button>
+<button onclick="withdraw()">Withdraw</button>
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<!-- TASKS -->
+<div id="tasksBox" class="hidden">
+
+<h3>Tasks</h3>
+
+<div class="box">
+Follow TikTok → Ksh 20
+<button onclick="doTask(20)">Complete</button>
+</div>
+
+<div class="box">
+Watch Video → Ksh 15
+<button onclick="doTask(15)">Complete</button>
+</div>
+
+<div class="box">
+App Review → Ksh 25
+<button onclick="doTask(25)">Complete</button>
+</div>
+
+<button onclick="show('dashboard')">Back</button>
+
+</div>
+
+<!-- VIP -->
+<div id="vipBox" class="hidden">
+
+<h3>VIP Upgrade</h3>
+
+<div class="box">
+VIP → Ksh 200 (x1.3 earnings)
+<button onclick="upgrade('VIP',200,1.3)">Upgrade</button>
+</div>
+
+<div class="box">
+VVIP → Ksh 500 (x1.6 earnings)
+<button onclick="upgrade('VVIP',500,1.6)">Upgrade</button>
+</div>
+
+<button onclick="show('dashboard')">Back</button>
+
+</div>
+
+<!-- ADMIN -->
+<div id="adminBox" class="hidden">
+
+<h3>Admin Panel</h3>
+
+<p>Mode: <b id="mode">DEMO</b></p>
+
+<button onclick="toggleMode()">Switch Mode</button>
+<button onclick="show('dashboard')">Back</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* ===========================
+   DEMO VERSION ONLY
+   REAL PAYMENTS REQUIRE BACKEND
+=========================== */
+
+let users = JSON.parse(localStorage.getItem("rickyUsers") || "{}");
+let current = null;
+let demoMode = true;
+
+function save(){
+  localStorage.setItem("rickyUsers",JSON.stringify(users));
+}
+
+function show(id){
+  document.querySelectorAll(".container > div").forEach(d=>{
+    d.classList.add("hidden");
+  });
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function register(){
+  let e = regEmail.value.trim();
+  let p = regPass.value.trim();
+
+  if(!e || !p){
+    alert("Fill all fields");
+    return;
+  }
+
+  if(users[e]){
+    alert("Account exists");
+    return;
+  }
+
+  users[e]={
+    pass:btoa(p),
+    active:false,
+    balance:0,
+    tier:"FREE",
+    mult:1
+  };
+
+  save();
+  alert("Registered! Login now.");
+  show("loginBox");
+}
+
+function login(){
+  let e = loginEmail.value.trim();
+  let p = loginPass.value.trim();
+
+  if(!users[e]){
+    alert("No account");
+    return;
+  }
+
+  if(users[e].pass !== btoa(p)){
+    alert("Wrong password");
+    return;
+  }
+
+  current = e;
+  loadDash();
+  show("dashboard");
+}
+
+function loadDash(){
+  let u = users[current];
+  userEmail.innerText=current;
+  userBalance.innerText=u.balance.toFixed(2);
+  userTier.innerText=u.tier;
+
+  if(current==="admin@ricky"){
+    document.getElementById("adminBox").classList.remove("hidden");
+  }
+}
+
+function logout(){
+  current=null;
+  show("loginBox");
+}
+
+function activate(){
+  let u = users[current];
+
+  if(u.active){
+    alert("Already active");
+    return;
+  }
+
+  if(demoMode){
+    u.active=true;
+    alert("Demo activated");
+  }else{
+    alert("M-Pesa STK Push will open here");
+  }
+
+  save();
+  loadDash();
+}
+
+function doTask(amount){
+  let u = users[current];
+
+  if(!u.active){
+    alert("Activate first");
+    return;
+  }
+
+  let earn = amount * u.mult;
+  u.balance += earn;
+
+  save();
+  loadDash();
+
+  alert("Earned Ksh "+earn);
+}
+
+function upgrade(tier,cost,mult){
+  let u = users[current];
+
+  if(!u.active){
+    alert("Activate first");
+    return;
+  }
+
+  if(demoMode){
+
+    if(u.balance<cost){
+      alert("Insufficient balance");
+      return;
+    }
+
+    u.balance-=cost;
+    u.tier=tier;
+    u.mult=mult;
+
+    alert("Upgraded!");
+
+  }else{
+    alert("M-Pesa STK Push will open here");
+  }
+
+  save();
+  loadDash();
+}
+
+function withdraw(){
+  let u = users[current];
+
+  if(u.balance<200){
+    alert("Min withdraw Ksh 200");
+    return;
+  }
+
+  if(demoMode){
+    alert("Demo mode: Withdraw simulated");
+    u.balance=0;
+  }else{
+    alert("Real withdrawal via M-Pesa");
+  }
+
+  save();
+  loadDash();
+}
+
+function toggleMode(){
+  demoMode = !demoMode;
+  mode.innerText = demoMode ? "DEMO" : "REAL";
+  alert("Mode changed");
+}
+
+</script>
+
+<footer style="text-align:center;padding:10px;font-size:12px;color:#666;">
+© 2026 Ricky✳️. All Rights Reserved.
+</footer>
+
+</body>
+</html>
